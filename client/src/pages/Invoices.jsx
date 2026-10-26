@@ -23,7 +23,7 @@ import {
 import { api } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { formatINR, formatDate } from '../utils/gstUtils';
-import { exportToCSV, exportToExcel, exportToPDF, exportToJSON } from '../utils/exportUtils';
+import { exportToCSV, exportToExcel, exportToPDF, exportToJSON, fmtRs } from '../utils/exportUtils';
 import InvoicePrintModal from '../components/InvoicePrintModal';
 import CaAuditModal from '../components/CaAuditModal';
 
@@ -88,26 +88,45 @@ export default function Invoices() {
   };
 
   const handleExportPDF = () => {
-    const headers = ['Invoice #', 'Date', 'Customer', 'GSTIN', 'Taxable Val', 'Total Tax', 'Grand Total', 'Status', 'CA Audit'];
+    const headers = ['Invoice #', 'Date', 'Customer', 'GSTIN', 'Supply Type', 'Taxable Value', 'Total Tax', 'Grand Total', 'Status', 'CA Audit'];
     const rows = invoices.map((inv) => [
       inv.invoiceNumber,
       formatDate(inv.invoiceDate),
       inv.customerDetails?.companyName || inv.customerDetails?.name,
       inv.customerDetails?.gstin || 'B2C',
-      formatINR(inv.totalTaxableAmount),
-      formatINR((inv.totalCgst || 0) + (inv.totalSgst || 0) + (inv.totalIgst || 0)),
-      formatINR(inv.grandTotal),
+      inv.isInterState ? 'Inter-State (IGST)' : 'Intra-State (CGST+SGST)',
+      fmtRs(inv.totalTaxableAmount),
+      fmtRs((inv.totalCgst || 0) + (inv.totalSgst || 0) + (inv.totalIgst || 0)),
+      fmtRs(inv.grandTotal),
       inv.status,
       inv.isCaAudited ? 'Verified' : 'Pending',
     ]);
 
+    const totalTurnover = invoices.reduce(
+      (acc, i) => acc + (i.status !== 'Cancelled' ? i.grandTotal : 0),
+      0
+    );
+
     exportToPDF({
       title: 'Tax Invoices & Billing Register',
-      subtitle: `Total Invoices: ${invoices.length} | Invoiced Turnover: ${formatINR(invoices.reduce((acc, i) => acc + (i.status !== 'Cancelled' ? i.grandTotal : 0), 0))}`,
+      subtitle: `Total Invoices: ${invoices.length}  |  Invoiced Turnover: ${fmtRs(totalTurnover)}`,
       headers,
       rows,
       filename: `Invoices_Register_${new Date().toISOString().split('T')[0]}`,
       orientation: 'landscape',
+      // Explicit column widths (mm) so currency values are never clipped
+      columnStyles: {
+        0: { cellWidth: 28 },  // Invoice #
+        1: { cellWidth: 22 },  // Date
+        2: { cellWidth: 38 },  // Customer
+        3: { cellWidth: 30 },  // GSTIN
+        4: { cellWidth: 32 },  // Supply Type
+        5: { cellWidth: 28, halign: 'right' }, // Taxable Value
+        6: { cellWidth: 24, halign: 'right' }, // Total Tax
+        7: { cellWidth: 28, halign: 'right' }, // Grand Total
+        8: { cellWidth: 18, halign: 'center' }, // Status
+        9: { cellWidth: 18, halign: 'center' }, // CA Audit
+      },
     });
     setExportDropdownOpen(false);
   };
