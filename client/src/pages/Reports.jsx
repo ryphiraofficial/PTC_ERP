@@ -17,7 +17,7 @@ import {
 import { api } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { formatINR, formatDate } from '../utils/gstUtils';
-import { exportToCSV, exportToExcel, exportToPDF, exportToJSON } from '../utils/exportUtils';
+import { exportToCSV, exportToExcel, exportToPDF, exportToJSON, fmtRs } from '../utils/exportUtils';
 
 export default function Reports() {
   const { currentRole, currentUser, permissions } = useAuth();
@@ -137,11 +137,11 @@ export default function Reports() {
         formatDate(inv.invoiceDate),
         inv.customerName,
         inv.gstin,
-        formatINR(inv.taxableAmount),
-        formatINR(inv.cgst),
-        formatINR(inv.sgst),
-        formatINR(inv.igst),
-        formatINR(inv.grandTotal),
+        fmtRs(inv.taxableAmount),
+        fmtRs(inv.cgst),
+        fmtRs(inv.sgst),
+        fmtRs(inv.igst),
+        fmtRs(inv.grandTotal),
         inv.isCaAudited ? 'Verified' : 'Pending',
       ]);
 
@@ -152,6 +152,18 @@ export default function Reports() {
         rows,
         filename: `GSTR1_Report_${new Date().toISOString().split('T')[0]}`,
         orientation: 'landscape',
+        columnStyles: {
+          0: { cellWidth: 26 },
+          1: { cellWidth: 20 },
+          2: { cellWidth: 36 },
+          3: { cellWidth: 30 },
+          4: { cellWidth: 26, halign: 'right' },
+          5: { cellWidth: 22, halign: 'right' },
+          6: { cellWidth: 22, halign: 'right' },
+          7: { cellWidth: 22, halign: 'right' },
+          8: { cellWidth: 26, halign: 'right' },
+          9: { cellWidth: 18, halign: 'center' },
+        },
       });
     } else if (activeTab === 'gstr3b') {
       const headers = ['Nature of Supplies', 'Taxable Value', 'Integrated Tax (IGST)', 'Central Tax (CGST)', 'State/UT Tax (SGST)', 'Total Tax Liability'];
@@ -159,39 +171,47 @@ export default function Reports() {
       const rows = [
         [
           '3.1 (a) Outward Taxable Supplies (Normal)',
-          formatINR(s31.totalTaxableValue),
-          formatINR(s31.integratedTax),
-          formatINR(s31.centralTax),
-          formatINR(s31.stateUtTax),
-          formatINR((s31.integratedTax || 0) + (s31.centralTax || 0) + (s31.stateUtTax || 0)),
+          fmtRs(s31.totalTaxableValue),
+          fmtRs(s31.integratedTax),
+          fmtRs(s31.centralTax),
+          fmtRs(s31.stateUtTax),
+          fmtRs((s31.integratedTax || 0) + (s31.centralTax || 0) + (s31.stateUtTax || 0)),
         ],
         [
           '3.2 Inter-State Supplies to Unregistered Persons',
-          formatINR(gstr3bData?.section32?.suppliesToUnregistered?.taxableValue || 0),
-          formatINR(gstr3bData?.section32?.suppliesToUnregistered?.integratedTax || 0),
+          fmtRs(gstr3bData?.section32?.suppliesToUnregistered?.taxableValue || 0),
+          fmtRs(gstr3bData?.section32?.suppliesToUnregistered?.integratedTax || 0),
           '-',
           '-',
-          formatINR(gstr3bData?.section32?.suppliesToUnregistered?.integratedTax || 0),
+          fmtRs(gstr3bData?.section32?.suppliesToUnregistered?.integratedTax || 0),
         ],
       ];
 
       exportToPDF({
         title: 'Form GSTR-3B: Monthly Summary Return & Tax Liability',
-        subtitle: `Net Tax Payable to Government: ${formatINR(gstr3bData?.totalTaxLiability)}`,
+        subtitle: `Net Tax Payable to Government: ${fmtRs(gstr3bData?.totalTaxLiability)}`,
         headers,
         rows,
         filename: `GSTR3B_Report_${new Date().toISOString().split('T')[0]}`,
         orientation: 'landscape',
+        columnStyles: {
+          0: { cellWidth: 90 },
+          1: { cellWidth: 34, halign: 'right' },
+          2: { cellWidth: 34, halign: 'right' },
+          3: { cellWidth: 34, halign: 'right' },
+          4: { cellWidth: 34, halign: 'right' },
+          5: { cellWidth: 34, halign: 'right' },
+        },
       });
     } else {
       const headers = ['Rate Slab', 'Taxable Turnover', 'CGST', 'SGST', 'IGST', 'Total GST Tax'];
       const rows = (gstr1Data?.rateWiseTax || []).map((r) => [
         `${r.rate}%`,
-        formatINR(r.taxableValue),
-        formatINR(r.cgst),
-        formatINR(r.sgst),
-        formatINR(r.igst),
-        formatINR(r.totalTax),
+        fmtRs(r.taxableValue),
+        fmtRs(r.cgst),
+        fmtRs(r.sgst),
+        fmtRs(r.igst),
+        fmtRs(r.totalTax),
       ]);
 
       exportToPDF({
@@ -201,6 +221,14 @@ export default function Reports() {
         rows,
         filename: `GST_Rate_Distribution_${new Date().toISOString().split('T')[0]}`,
         orientation: 'portrait',
+        columnStyles: {
+          0: { cellWidth: 22, halign: 'center' },
+          1: { cellWidth: 40, halign: 'right' },
+          2: { cellWidth: 35, halign: 'right' },
+          3: { cellWidth: 35, halign: 'right' },
+          4: { cellWidth: 35, halign: 'right' },
+          5: { cellWidth: 40, halign: 'right' },
+        },
       });
     }
     setExportDropdownOpen(false);
