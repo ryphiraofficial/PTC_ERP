@@ -1,5 +1,5 @@
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 // 1. Export Data as CSV
 export function exportToCSV(filename, headers, rows) {
@@ -108,7 +108,7 @@ export function exportToPDF({
   }
 
   // Draw Data Table using autoTable
-  doc.autoTable({
+  autoTable(doc, {
     startY: subtitle ? 40 : 34,
     head: [headers],
     body: rows,

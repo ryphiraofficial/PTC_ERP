@@ -180,6 +180,9 @@ export const createInvoice = async (req, res) => {
       }
     }
 
+    const advanceAmount = Number(req.body.advanceAmount) || 0;
+    const balanceDue = Math.max(0, grandTotal - advanceAmount);
+
     const newInvoice = new Invoice({
       invoiceNumber,
       invoiceDate: req.body.invoiceDate || new Date(),
@@ -206,6 +209,8 @@ export const createInvoice = async (req, res) => {
       totalCess,
       roundOff,
       grandTotal,
+      advanceAmount,
+      balanceDue,
       totalInWords,
       status: req.body.status || 'Sent',
       notes: req.body.notes || '',
@@ -332,6 +337,11 @@ export const updateInvoice = async (req, res) => {
     if (req.body.status) invoice.status = req.body.status;
     if (req.body.notes !== undefined) invoice.notes = req.body.notes;
     if (req.body.termsAndConditions !== undefined) invoice.termsAndConditions = req.body.termsAndConditions;
+    if (req.body.advanceAmount !== undefined) {
+      invoice.advanceAmount = Math.max(0, Number(req.body.advanceAmount) || 0);
+    }
+    // Always recompute balanceDue after any change that could affect grand total or advance
+    invoice.balanceDue = Math.max(0, invoice.grandTotal - (invoice.advanceAmount || 0));
     if (req.body.paymentDetails) {
       invoice.paymentDetails = { ...invoice.paymentDetails.toObject(), ...req.body.paymentDetails };
       if (invoice.paymentDetails.paymentStatus === 'Paid') {

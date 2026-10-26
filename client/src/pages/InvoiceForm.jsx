@@ -47,6 +47,7 @@ export default function InvoiceForm() {
   const [notes, setNotes] = useState('Thank you for your business!');
   const [termsAndConditions, setTermsAndConditions] = useState('');
   const [editReason, setEditReason] = useState('Updated invoice details and tax amounts');
+  const [advanceAmount, setAdvanceAmount] = useState(0);
 
   // Line Items
   const [items, setItems] = useState([
@@ -102,6 +103,7 @@ export default function InvoiceForm() {
           setNotes(inv.notes || '');
           setTermsAndConditions(inv.termsAndConditions || '');
           setEditHistory(inv.editHistory || []);
+          setAdvanceAmount(inv.advanceAmount || 0);
 
           if (inv.items && inv.items.length > 0) {
             setItems(
@@ -245,6 +247,8 @@ export default function InvoiceForm() {
   const exactTotal = calculatedTaxable + calculatedCgst + calculatedSgst + calculatedIgst;
   const roundedGrandTotal = Math.round(exactTotal);
   const roundOff = Math.round((roundedGrandTotal - exactTotal) * 100) / 100;
+  const advanceAmountNum = Number(advanceAmount) || 0;
+  const balanceDue = Math.max(0, roundedGrandTotal - advanceAmountNum);
 
   // Submit Handler
   const handleSubmit = async (e) => {
@@ -273,6 +277,7 @@ export default function InvoiceForm() {
         notes,
         termsAndConditions,
         items,
+        advanceAmount: Number(advanceAmount) || 0,
         editReason: isEditMode ? editReason : 'Initial invoice creation',
       };
 
@@ -721,6 +726,25 @@ export default function InvoiceForm() {
                 <option value="Cancelled">Cancelled</option>
               </select>
             </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Advance Amount Received (₹):
+              </label>
+              <input
+                id="advance-amount-input"
+                type="number"
+                min="0"
+                step="any"
+                value={advanceAmount}
+                onChange={(e) => setAdvanceAmount(e.target.value)}
+                placeholder="0.00"
+                className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-right"
+              />
+              {advanceAmountNum > 0 && advanceAmountNum > roundedGrandTotal && (
+                <p className="text-rose-500 text-[11px] mt-1">Advance exceeds grand total</p>
+              )}
+            </div>
           </div>
 
           {/* Card 4: Live Totals & Tax Breakdown */}
@@ -768,6 +792,23 @@ export default function InvoiceForm() {
                   {formatINR(roundedGrandTotal)}
                 </span>
               </div>
+
+              {advanceAmountNum > 0 && (
+                <>
+                  <div className="flex justify-between text-amber-300 text-xs bg-amber-900/30 px-2 py-1.5 rounded-lg">
+                    <span>Advance Received:</span>
+                    <span className="font-semibold font-mono">− {formatINR(advanceAmountNum)}</span>
+                  </div>
+                  <div className="flex justify-between items-baseline pt-1 border-t border-slate-700">
+                    <span className="text-sm font-bold text-slate-300">Balance Due:</span>
+                    <span className={`text-xl font-black font-mono ${
+                      balanceDue === 0 ? 'text-emerald-400' : 'text-rose-400'
+                    }`}>
+                      {formatINR(balanceDue)}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
 
             <button
