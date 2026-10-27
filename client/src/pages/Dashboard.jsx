@@ -86,7 +86,7 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
             {permissions.canCreateInvoices && (
               <button
                 onClick={() => navigate('/invoices/new')}
@@ -143,7 +143,7 @@ export default function Dashboard() {
             <div className="text-2xl font-black text-slate-900 font-mono">
               {formatINR(summary.totalTax)}
             </div>
-            <div className="flex items-center gap-2 text-[10px] text-slate-500 mt-1">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[10px] text-slate-500 mt-1">
               <span>CGST: {formatINR(summary.totalCgst)}</span>
               <span>•</span>
               <span>SGST: {formatINR(summary.totalSgst)}</span>
@@ -224,7 +224,7 @@ export default function Dashboard() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="w-full text-left border-collapse text-xs min-w-[550px]">
               <thead>
                 <tr className="text-slate-400 font-semibold border-b border-slate-100 uppercase text-[10px]">
                   <th className="pb-2">Invoice #</th>

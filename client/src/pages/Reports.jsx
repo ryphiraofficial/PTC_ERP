@@ -273,7 +273,7 @@ export default function Reports() {
         </div>
 
         {/* All Format Export Button Dropdown */}
-        <div className="relative flex items-center gap-2 self-start sm:self-auto">
+        <div className="relative flex flex-wrap items-center gap-2 self-start sm:self-auto">
           <button
             onClick={() => window.print()}
             className="p-2 border border-slate-200 text-slate-600 hover:bg-slate-100 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm"
@@ -286,11 +286,12 @@ export default function Reports() {
           <div className="relative">
             <button
               onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm hover:shadow transition-all"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm hover:shadow transition-all"
             >
-              <Download className="w-4 h-4" />
-              <span>Download Report (All Formats)</span>
-              <ChevronDown className="w-3.5 h-3.5 ml-0.5" />
+              <Download className="w-4 h-4 flex-shrink-0" />
+              <span className="hidden sm:inline">Download Report (All Formats)</span>
+              <span className="sm:hidden">Download Report</span>
+              <ChevronDown className="w-3.5 h-3.5 ml-0.5 flex-shrink-0" />
             </button>
 
             {exportDropdownOpen && (
@@ -456,7 +457,7 @@ export default function Reports() {
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs">
+                  <table className="w-full text-left border-collapse text-xs min-w-[760px]">
                     <thead>
                       <tr className="bg-slate-50 text-slate-600 border-b border-slate-200 text-[11px] font-bold uppercase">
                         <th className="p-3">Invoice #</th>
@@ -522,7 +523,7 @@ export default function Reports() {
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs">
+                  <table className="w-full text-left border-collapse text-xs min-w-[700px]">
                     <thead>
                       <tr className="bg-slate-50 text-slate-600 border-b border-slate-200 text-[11px] font-bold uppercase">
                         <th className="p-3">HSN/SAC</th>
@@ -579,7 +580,7 @@ export default function Reports() {
                   </h3>
 
                   <div className="overflow-x-auto border border-slate-200 rounded-xl">
-                    <table className="w-full text-left border-collapse text-xs">
+                    <table className="w-full text-left border-collapse text-xs min-w-[620px]">
                       <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-600">
                         <tr>
                           <th className="p-3">Nature of Supplies</th>
@@ -624,7 +625,7 @@ export default function Reports() {
                   </h3>
 
                   <div className="overflow-x-auto border border-slate-200 rounded-xl">
-                    <table className="w-full text-left border-collapse text-xs">
+                    <table className="w-full text-left border-collapse text-xs min-w-[480px]">
                       <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-600">
                         <tr>
                           <th className="p-3">Supply Classification</th>
@@ -685,7 +686,7 @@ export default function Reports() {
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
+                <table className="w-full text-left border-collapse text-xs min-w-[560px]">
                   <thead>
                     <tr className="bg-slate-50 text-slate-600 border-b border-slate-200 text-[11px] font-bold uppercase">
                       <th className="p-3">GST Rate Slab</th>

@@ -217,7 +217,7 @@ export default function Invoices() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Export Dropdown */}
           <div className="relative">
             <button
@@ -276,7 +276,7 @@ export default function Invoices() {
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
             Total Invoices
@@ -337,7 +337,7 @@ export default function Invoices() {
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
           {/* Status Filter */}
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-xs">
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-xs overflow-x-auto max-w-full">
             {['All', 'Paid', 'Sent', 'Draft', 'Overdue'].map((st) => (
               <button
                 key={st}
@@ -369,7 +369,7 @@ export default function Invoices() {
       {/* Invoices Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[850px]">
             <thead>
               <tr className="bg-slate-50 text-slate-600 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider">
                 <th className="p-3.5">Invoice #</th>

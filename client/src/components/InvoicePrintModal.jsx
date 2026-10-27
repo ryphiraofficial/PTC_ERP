@@ -84,10 +84,11 @@ export default function InvoicePrintModal({ invoice, company, onClose }) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       {/* ── Top Control Bar ── */}
-      <div className="flex-shrink-0 flex items-center justify-between px-4 sm:px-6 py-3 bg-slate-950 text-white border-b border-slate-800 shadow-lg">
-        <div className="flex items-center gap-3 min-w-0">
-          <span className="font-bold text-sm sm:text-base whitespace-nowrap">GST Tax Invoice Preview</span>
-          <span className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono truncate max-w-[120px] sm:max-w-none">
+      <div className="flex-shrink-0 flex items-center justify-between px-3 sm:px-6 py-2.5 sm:py-3 bg-slate-950 text-white border-b border-slate-800 shadow-lg gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <span className="font-bold text-sm sm:text-base whitespace-nowrap hidden sm:inline">GST Tax Invoice Preview</span>
+          <span className="font-bold text-xs whitespace-nowrap sm:hidden">Invoice</span>
+          <span className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono truncate max-w-[100px] sm:max-w-none">
             {invoice.invoiceNumber}
           </span>
           {invoice.isCaAudited && (

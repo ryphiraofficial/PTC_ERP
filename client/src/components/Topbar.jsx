@@ -24,31 +24,31 @@ export default function Topbar({ onSearch, onMenuToggle }) {
   };
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm no-print">
+    <header className="h-16 bg-white border-b border-slate-200 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm no-print gap-2">
       {/* Mobile Hamburger & Search Input */}
-      <div className="flex items-center gap-3 w-full sm:w-auto flex-1 max-w-lg">
+      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 max-w-lg">
         {/* Hamburger Menu on Mobile */}
         <button
           onClick={onMenuToggle}
-          className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg lg:hidden"
+          className="p-1.5 sm:p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg lg:hidden flex-shrink-0"
           title="Open menu"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="relative w-full">
+        <div className="relative w-full min-w-0">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search invoices, GSTIN, clients..."
             onChange={(e) => onSearch && onSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 sm:py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all"
+            className="w-full pl-9 pr-3 py-1.5 sm:py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all truncate"
           />
         </div>
       </div>
 
       {/* Right Actions: Role Badge & Profile */}
-      <div className="flex items-center gap-2 sm:gap-3 pl-2">
+      <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
         {/* Create Invoice Button (Only Owner & Biller) */}
         {permissions.canCreateInvoice && (
           <button

@@ -335,7 +335,7 @@ export default function InvoiceForm() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={() => navigate('/invoices')}
@@ -614,45 +614,47 @@ export default function InvoiceForm() {
                     </div>
 
                     {/* Subrow: Discount %, GST Rate, Line Totals */}
-                    <div className="pt-2 border-t border-slate-200/80 grid grid-cols-12 gap-3 items-center text-xs">
-                      <div className="col-span-4 sm:col-span-3 flex items-center gap-1.5">
-                        <span className="text-slate-500 text-[11px]">Disc %:</span>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          value={item.discountPercent}
-                          onChange={(e) => handleItemFieldChange(idx, 'discountPercent', e.target.value)}
-                          className="w-14 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-center text-xs"
-                        />
+                    <div className="pt-2 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-slate-500 text-[11px]">Disc %:</span>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={item.discountPercent}
+                            onChange={(e) => handleItemFieldChange(idx, 'discountPercent', e.target.value)}
+                            className="w-14 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-center text-xs"
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-slate-500 text-[11px]">GST Rate:</span>
+                          <select
+                            value={item.gstRate}
+                            onChange={(e) => handleItemFieldChange(idx, 'gstRate', Number(e.target.value))}
+                            className="px-2 py-0.5 bg-white border border-slate-200 rounded text-xs font-semibold text-indigo-700"
+                          >
+                            <option value={0}>0%</option>
+                            <option value={5}>5%</option>
+                            <option value={12}>12%</option>
+                            <option value={18}>18%</option>
+                            <option value={28}>28%</option>
+                          </select>
+                        </div>
                       </div>
 
-                      <div className="col-span-4 sm:col-span-3 flex items-center gap-1.5">
-                        <span className="text-slate-500 text-[11px]">GST Rate:</span>
-                        <select
-                          value={item.gstRate}
-                          onChange={(e) => handleItemFieldChange(idx, 'gstRate', Number(e.target.value))}
-                          className="px-2 py-0.5 bg-white border border-slate-200 rounded text-xs font-semibold text-indigo-700"
-                        >
-                          <option value={0}>0%</option>
-                          <option value={5}>5%</option>
-                          <option value={12}>12%</option>
-                          <option value={18}>18%</option>
-                          <option value={28}>28%</option>
-                        </select>
-                      </div>
-
-                      <div className="col-span-4 sm:col-span-6 flex items-center justify-end gap-3 text-[11px]">
-                        <span className="text-slate-500">
+                      <div className="flex flex-wrap items-center justify-end gap-2 text-[11px]">
+                        <span className="text-slate-500 whitespace-nowrap">
                           Taxable: <strong>{formatINR(calc?.taxableAmount)}</strong>
                         </span>
-                        <span className="text-indigo-600 font-semibold">
+                        <span className="text-indigo-600 font-semibold whitespace-nowrap">
                           Tax:{' '}
                           <strong>
                             {formatINR(isInterState ? calc?.igst : (calc?.cgst || 0) + (calc?.sgst || 0))}
                           </strong>
                         </span>
-                        <span className="text-slate-900 font-bold bg-white px-2 py-0.5 rounded border border-slate-200">
+                        <span className="text-slate-900 font-bold bg-white px-2 py-0.5 rounded border border-slate-200 whitespace-nowrap">
                           Line Total: {formatINR(calc?.total)}
                         </span>
                       </div>

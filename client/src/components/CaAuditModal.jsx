@@ -29,7 +29,7 @@ export default function CaAuditModal({ invoice, onClose, onAudited }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-slate-200">
         <div className="px-6 py-4 bg-amber-500 text-slate-950 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <ShieldCheck className="w-6 h-6 text-slate-950" />
