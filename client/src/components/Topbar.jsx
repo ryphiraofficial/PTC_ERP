@@ -86,37 +86,34 @@ export default function Topbar({ onSearch, onMenuToggle }) {
                   : 'bg-emerald-600'
               }`}
             >
-              {currentUser?.name?.charAt(0) || 'U'}
+              {currentRole === 'owner' ? 'O' : currentRole === 'ca' ? 'CA' : 'B'}
             </div>
             <div className="hidden md:block leading-tight">
-              <div className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
-                {currentUser?.name}
+              <div className="text-xs font-semibold text-slate-900 capitalize">
+                {currentRole === 'owner' ? 'Owner' : currentRole === 'ca' ? 'CA (Audit)' : 'Biller'}
               </div>
-              <div className="text-[10px] text-slate-500 font-medium capitalize">
-                {currentRole} Session
+              <div className="text-[10px] text-slate-500 font-medium">
+                Active Session
               </div>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2.5 z-50 animate-in fade-in zoom-in-95">
+            <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2.5 z-50 animate-in fade-in zoom-in-95">
               <div className="px-4 py-2 border-b border-slate-100">
-                <p className="text-xs font-bold text-slate-900 truncate">{currentUser?.name}</p>
-                <p className="text-[11px] text-slate-500 font-mono truncate">{currentUser?.email}</p>
-                <div className="mt-1.5">
-                  <span
-                    className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                      currentRole === 'owner'
-                        ? 'bg-indigo-100 text-indigo-800 border border-indigo-200'
-                        : currentRole === 'ca'
-                        ? 'bg-amber-100 text-amber-800 border border-amber-200'
-                        : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                    }`}
-                  >
-                    {currentUser?.title || currentRole.toUpperCase()}
-                  </span>
+                <div
+                  className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
+                    currentRole === 'owner'
+                      ? 'bg-indigo-100 text-indigo-800 border border-indigo-200'
+                      : currentRole === 'ca'
+                      ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                      : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                  }`}
+                >
+                  {currentRole === 'owner' ? 'Owner' : currentRole === 'ca' ? 'CA (Audit)' : 'Biller'}
                 </div>
+                <p className="text-[11px] text-slate-400 mt-1.5 font-medium">Active workspace session</p>
               </div>
 
               {/* Sign Out Action */}

@@ -33,7 +33,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
     if (permissions.isBiller) {
       return [
-        { to: '/invoices', label: 'Invoices & Billing', icon: FileText, badge: 'Billing Desk' },
+        { to: '/invoices', label: 'Invoices & Billing', icon: FileText },
         { to: '/customers', label: 'Customers Directory', icon: Users },
         { to: '/items', label: 'Items & Services', icon: Package },
       ];
@@ -41,8 +41,8 @@ export default function Sidebar({ isOpen, onClose }) {
 
     if (permissions.isCA) {
       return [
-        { to: '/reports', label: 'GST Returns & Audit', icon: BarChart3, badge: 'Statutory Filing' },
-        { to: '/invoices', label: 'Invoices Audit Register', icon: FileText, badge: 'Tax Audit' },
+        { to: '/reports', label: 'GST Returns & Audit', icon: BarChart3 },
+        { to: '/invoices', label: 'Invoices Audit Register', icon: FileText },
       ];
     }
 
@@ -108,15 +108,12 @@ export default function Sidebar({ isOpen, onClose }) {
 
         {/* Role Pill Banner */}
         <div className="p-3.5 mx-3 my-3 rounded-xl bg-slate-800/60 border border-slate-700/60">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 flex items-center gap-1">
-              {permissions.isCA && <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />}
-              {permissions.isOwner && <UserCheck className="w-3.5 h-3.5 text-indigo-400" />}
-              {permissions.isBiller && <Receipt className="w-3.5 h-3.5 text-emerald-400" />}
-              Account:
-            </span>
+          <div className="flex items-center gap-2">
+            {permissions.isCA && <ShieldCheck className="w-4 h-4 text-amber-400" />}
+            {permissions.isOwner && <UserCheck className="w-4 h-4 text-indigo-400" />}
+            {permissions.isBiller && <Receipt className="w-4 h-4 text-emerald-400" />}
             <span
-              className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+              className={`text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
                 currentRole === 'owner'
                   ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
                   : currentRole === 'ca'
@@ -124,15 +121,9 @@ export default function Sidebar({ isOpen, onClose }) {
                   : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
               }`}
             >
-              {currentRole}
+              {currentRole === 'owner' ? 'Owner' : currentRole === 'ca' ? 'CA (Audit)' : 'Biller'}
             </span>
           </div>
-          <div className="text-xs font-bold text-white truncate">
-            {currentUser?.name || 'Authorized User'}
-          </div>
-          <p className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">
-            {currentUser?.title || currentRole.toUpperCase()}
-          </p>
         </div>
 
         {/* Navigation Links */}

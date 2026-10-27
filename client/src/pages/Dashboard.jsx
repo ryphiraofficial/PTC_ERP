@@ -64,14 +64,18 @@ export default function Dashboard() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xs uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                {currentUser?.title}
+                {currentRole === 'owner' ? 'Owner' : currentRole === 'ca' ? 'CA (Audit)' : 'Biller'}
               </span>
               <span className="text-xs text-slate-400">
                 GSTIN: <strong className="text-white font-mono">{stats?.companyGstin}</strong>
               </span>
             </div>
             <h1 className="text-2xl font-black tracking-tight text-white">
-              Welcome back, {currentUser?.name}
+              {currentRole === 'owner'
+                ? 'Owner Dashboard'
+                : currentRole === 'ca'
+                ? 'CA Audit Workspace'
+                : 'Biller Workspace'}
             </h1>
             <p className="text-xs text-slate-300 max-w-xl mt-1">
               {permissions.isCA
