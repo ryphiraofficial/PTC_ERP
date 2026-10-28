@@ -196,7 +196,7 @@ export default function Customers() {
           </p>
         </div>
 
-        {permissions.canCreateInvoices && (
+        {(permissions.isOwner || permissions.isBiller) && (
           <button
             onClick={openAddModal}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm hover:shadow transition-all"
@@ -249,6 +249,15 @@ export default function Customers() {
             <Users className="w-10 h-10 mx-auto text-slate-300 mb-2" />
             <p className="font-semibold text-slate-700">No customers found</p>
             <p className="text-xs text-slate-400">Add a customer to get started with billing</p>
+            {(permissions.isOwner || permissions.isBiller) && (
+              <button
+                onClick={openAddModal}
+                className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Customer</span>
+              </button>
+            )}
           </div>
         ) : (
           customers.map((c) => (

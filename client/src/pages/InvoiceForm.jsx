@@ -14,10 +14,11 @@ import {
   AlertCircle,
   FileEdit,
   History,
+  X,
 } from 'lucide-react';
 import { api } from '../api';
 import { useAuth } from '../context/AuthContext';
-import { formatINR, GST_STATES, formatDate } from '../utils/gstUtils';
+import { formatINR, GST_STATES, formatDate, getStateCodeFromGstin, isValidGSTIN } from '../utils/gstUtils';
 
 export default function InvoiceForm() {
   const navigate = useNavigate();
@@ -32,6 +33,25 @@ export default function InvoiceForm() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [editHistory, setEditHistory] = useState([]);
+
+  // Quick Add Customer Modal State (Owner & Biller)
+  const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
+  const [customerModalForm, setCustomerModalForm] = useState({
+    name: '',
+    companyName: '',
+    gstin: '',
+    pan: '',
+    email: '',
+    phone: '',
+    street: '',
+    city: '',
+    state: 'Maharashtra',
+    stateCode: '27',
+    pincode: '',
+    customerType: 'B2C',
+  });
+  const [customerModalError, setCustomerModalError] = useState('');
+  const [savingCustomer, setSavingCustomer] = useState(false);
 
   // Form State
   const [invoiceNumber, setInvoiceNumber] = useState('');
@@ -152,6 +172,78 @@ export default function InvoiceForm() {
     const match = GST_STATES.find((s) => s.code === code);
     if (match) {
       setPlaceOfSupplyState(match.name);
+    }
+  };
+
+  // Quick Customer Creation Handlers
+  const handleCustomerGstinChange = (e) => {
+    const val = e.target.value.toUpperCase();
+    const update = { gstin: val };
+    if (val.length >= 2) {
+      const derived = getStateCodeFromGstin(val);
+      if (derived) {
+        update.state = derived.state;
+        update.stateCode = derived.code;
+      }
+    }
+    if (val.length >= 12) {
+      update.pan = val.substring(2, 12);
+    }
+    setCustomerModalForm({ ...customerModalForm, ...update });
+  };
+
+  const handleSaveQuickCustomer = async (e) => {
+    e.preventDefault();
+    if (!customerModalForm.name.trim()) {
+      setCustomerModalError('Customer / Contact name is required');
+      return;
+    }
+    if (customerModalForm.gstin && !isValidGSTIN(customerModalForm.gstin)) {
+      setCustomerModalError('Please enter a valid 15-character Indian GSTIN');
+      return;
+    }
+    try {
+      setSavingCustomer(true);
+      setCustomerModalError('');
+      const payload = {
+        name: customerModalForm.name,
+        companyName: customerModalForm.companyName,
+        gstin: customerModalForm.gstin,
+        pan: customerModalForm.pan,
+        email: customerModalForm.email,
+        phone: customerModalForm.phone,
+        customerType: customerModalForm.gstin ? 'B2B' : customerModalForm.customerType,
+        billingAddress: {
+          street: customerModalForm.street,
+          city: customerModalForm.city,
+          state: customerModalForm.state,
+          stateCode: customerModalForm.stateCode,
+          pincode: customerModalForm.pincode,
+        },
+      };
+      const created = await api.createCustomer(payload);
+      const updatedList = [created, ...customers];
+      setCustomers(updatedList);
+      handleCustomerChange(created._id, updatedList);
+      setShowAddCustomerModal(false);
+      setCustomerModalForm({
+        name: '',
+        companyName: '',
+        gstin: '',
+        pan: '',
+        email: '',
+        phone: '',
+        street: '',
+        city: '',
+        state: 'Maharashtra',
+        stateCode: '27',
+        pincode: '',
+        customerType: 'B2C',
+      });
+    } catch (err) {
+      setCustomerModalError(err.message || 'Failed to save customer');
+    } finally {
+      setSavingCustomer(false);
     }
   };
 
@@ -402,9 +494,21 @@ export default function InvoiceForm() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">
-                  Select Customer:
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700">
+                    Select Customer:
+                  </label>
+                  {(permissions.isOwner || permissions.isBiller) && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAddCustomerModal(true)}
+                      className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 hover:underline"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Customer</span>
+                    </button>
+                  )}
+                </div>
                 <select
                   value={customerId}
                   onChange={(e) => handleCustomerChange(e.target.value)}
@@ -851,6 +955,167 @@ export default function InvoiceForm() {
           </div>
         </div>
       </div>
+
+      {/* Quick Add Customer Modal (Owner & Biller) */}
+      {showAddCustomerModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-bold text-slate-900 text-base">Add New Customer</h3>
+              <button
+                type="button"
+                onClick={() => setShowAddCustomerModal(false)}
+                className="p-1 text-slate-400 hover:text-slate-900 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {customerModalError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{customerModalError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveQuickCustomer} className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Contact Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={customerModalForm.name}
+                    onChange={(e) => setCustomerModalForm({ ...customerModalForm, name: e.target.value })}
+                    placeholder="e.g. Sunil Nair"
+                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Business / Company Name</label>
+                  <input
+                    type="text"
+                    value={customerModalForm.companyName}
+                    onChange={(e) => setCustomerModalForm({ ...customerModalForm, companyName: e.target.value })}
+                    placeholder="e.g. TechnoSphere Digital Labs"
+                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">
+                  GSTIN (15 Digits - Auto-derives State & PAN)
+                </label>
+                <input
+                  type="text"
+                  maxLength={15}
+                  value={customerModalForm.gstin}
+                  onChange={handleCustomerGstinChange}
+                  placeholder="e.g. 27AAACT9876C1Z3"
+                  className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono font-bold uppercase tracking-wider text-indigo-900"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={customerModalForm.email}
+                    onChange={(e) => setCustomerModalForm({ ...customerModalForm, email: e.target.value })}
+                    placeholder="accounts@client.com"
+                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Phone</label>
+                  <input
+                    type="text"
+                    value={customerModalForm.phone}
+                    onChange={(e) => setCustomerModalForm({ ...customerModalForm, phone: e.target.value })}
+                    placeholder="+91 98200 12345"
+                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Street Address</label>
+                <input
+                  type="text"
+                  value={customerModalForm.street}
+                  onChange={(e) => setCustomerModalForm({ ...customerModalForm, street: e.target.value })}
+                  placeholder="Plot / Street / Office number"
+                  className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">City</label>
+                  <input
+                    type="text"
+                    value={customerModalForm.city}
+                    onChange={(e) => setCustomerModalForm({ ...customerModalForm, city: e.target.value })}
+                    placeholder="Mumbai"
+                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">State</label>
+                  <select
+                    value={customerModalForm.stateCode}
+                    onChange={(e) => {
+                      const code = e.target.value;
+                      const s = GST_STATES.find((st) => st.code === code);
+                      setCustomerModalForm({
+                        ...customerModalForm,
+                        stateCode: code,
+                        state: s ? s.name : customerModalForm.state,
+                      });
+                    }}
+                    className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900"
+                  >
+                    {GST_STATES.map((st) => (
+                      <option key={st.code} value={st.code}>
+                        [{st.code}] {st.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Pincode</label>
+                  <input
+                    type="text"
+                    value={customerModalForm.pincode}
+                    onChange={(e) => setCustomerModalForm({ ...customerModalForm, pincode: e.target.value })}
+                    placeholder="400001"
+                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddCustomerModal(false)}
+                  className="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-100 rounded-lg text-xs font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingCustomer}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm"
+                >
+                  {savingCustomer ? 'Saving...' : 'Save & Select Customer'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

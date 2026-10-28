@@ -130,6 +130,9 @@ export const AuthProvider = ({ children }) => {
     canAccessDashboard: currentRole === 'owner',
     canAccessInvoices: currentRole === 'owner' || currentRole === 'biller' || currentRole === 'ca',
     canCreateInvoice: currentRole === 'owner' || currentRole === 'biller',
+    canCreateInvoices: currentRole === 'owner' || currentRole === 'biller',
+    canAddCustomer: currentRole === 'owner' || currentRole === 'biller',
+    canAddItem: currentRole === 'owner' || currentRole === 'biller',
     canEditInvoice: currentRole === 'owner' || currentRole === 'biller', // CA cannot edit billing items
     canDeleteInvoice: currentRole === 'owner', // Only Owner can delete
     canAccessCustomers: currentRole === 'owner' || currentRole === 'biller',

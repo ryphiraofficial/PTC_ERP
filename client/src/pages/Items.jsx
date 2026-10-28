@@ -164,7 +164,7 @@ export default function Items() {
           </p>
         </div>
 
-        {permissions.canCreateInvoices && (
+        {(permissions.isOwner || permissions.isBiller) && (
           <button
             onClick={openAddModal}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm hover:shadow transition-all"
