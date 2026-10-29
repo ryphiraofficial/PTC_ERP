@@ -45,8 +45,8 @@ export default function InvoiceForm() {
     phone: '',
     street: '',
     city: '',
-    state: 'Maharashtra',
-    stateCode: '27',
+    state: 'Kerala',
+    stateCode: '32',
     pincode: '',
     customerType: 'B2C',
   });
@@ -61,8 +61,8 @@ export default function InvoiceForm() {
   );
   const [customerId, setCustomerId] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [placeOfSupplyState, setPlaceOfSupplyState] = useState('Maharashtra');
-  const [placeOfSupplyStateCode, setPlaceOfSupplyStateCode] = useState('27');
+  const [placeOfSupplyState, setPlaceOfSupplyState] = useState('Kerala');
+  const [placeOfSupplyStateCode, setPlaceOfSupplyStateCode] = useState('32');
   const [status, setStatus] = useState('Sent');
   const [notes, setNotes] = useState('Thank you for your business!');
   const [termsAndConditions, setTermsAndConditions] = useState('');
@@ -100,7 +100,7 @@ export default function InvoiceForm() {
         setItemsCatalog(itemRes);
 
         if (!isEditMode && compRes?.invoiceSettings) {
-          const p = compRes.invoiceSettings.prefix || 'INV-2024-';
+          const p = compRes.invoiceSettings.prefix || 'PTC-2026-';
           const n = compRes.invoiceSettings.nextNumber || 1001;
           setInvoiceNumber(`${p}${String(n).padStart(4, '0')}`);
           setTermsAndConditions(compRes.invoiceSettings.termsAndConditions || '');
@@ -151,7 +151,7 @@ export default function InvoiceForm() {
     loadData();
   }, [id, isEditMode]);
 
-  const companyStateCode = company?.address?.stateCode || '27';
+  const companyStateCode = company?.address?.stateCode || '32';
   const isInterState = placeOfSupplyStateCode !== companyStateCode;
 
   // Handle customer selection
@@ -160,8 +160,8 @@ export default function InvoiceForm() {
     const found = custList.find((c) => c._id === cId);
     if (found) {
       setSelectedCustomer(found);
-      const targetState = found.billingAddress?.state || 'Maharashtra';
-      const targetCode = found.billingAddress?.stateCode || '27';
+      const targetState = found.billingAddress?.state || 'Kerala';
+      const targetCode = found.billingAddress?.stateCode || '32';
       setPlaceOfSupplyState(targetState);
       setPlaceOfSupplyStateCode(targetCode);
     }
