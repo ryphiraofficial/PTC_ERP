@@ -156,7 +156,7 @@ export function exportToPDF({
   rows = [],
   filename = 'gst_report.pdf',
   orientation = 'landscape',
-  companyInfo = 'Apex Cloud Solutions Pvt Ltd | GSTIN: 27AAACA1234Q1ZP',
+  companyInfo = 'PATHIRIPALA TRADE CENTRE | GSTIN: 32AAOFP8734E1Z3',
   columnStyles = {},  // caller can override per-column widths
 }) {
   const doc = new jsPDF({
