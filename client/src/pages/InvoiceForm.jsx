@@ -263,8 +263,8 @@ export default function InvoiceForm() {
         phone: '',
         street: '',
         city: '',
-        state: 'Maharashtra',
-        stateCode: '27',
+        state: 'Kerala',
+        stateCode: '32',
         pincode: '',
         customerType: 'B2C',
       });
@@ -590,7 +590,7 @@ export default function InvoiceForm() {
                 </span>
               </div>
               <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-white/80 border border-current">
-                Seller: {companyStateCode} â‡„ Buyer: {placeOfSupplyStateCode}
+                Seller: {companyStateCode} ⇄ Buyer: {placeOfSupplyStateCode}
               </span>
             </div>
 
@@ -724,7 +724,7 @@ export default function InvoiceForm() {
                       {/* Rate / Price */}
                       <div className="col-span-6 sm:col-span-2">
                         <label className="text-[11px] font-bold text-slate-600 block mb-1 uppercase">
-                          Rate (â‚¹)
+                          Rate (₹)
                         </label>
                         <input
                           type="number"
@@ -926,7 +926,7 @@ export default function InvoiceForm() {
 
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">
-                Advance Amount Received (â‚¹):
+                Advance Amount Received (₹):
               </label>
               <input
                 id="advance-amount-input"
@@ -994,7 +994,7 @@ export default function InvoiceForm() {
                 <>
                   <div className="flex justify-between text-amber-300 text-xs bg-amber-900/30 px-2 py-1.5 rounded-lg">
                     <span>Advance Received:</span>
-                    <span className="font-semibold font-mono">âˆ’ {formatINR(advanceAmountNum)}</span>
+                    <span className="font-semibold font-mono">₹ {formatINR(advanceAmountNum)}</span>
                   </div>
                   <div className="flex justify-between items-baseline pt-1 border-t border-slate-700">
                     <span className="text-sm font-bold text-slate-300">Balance Due:</span>
