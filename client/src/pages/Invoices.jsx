@@ -42,6 +42,8 @@ export default function Invoices() {
   const [selectedInvoiceForPrint, setSelectedInvoiceForPrint] = useState(null);
   const [selectedInvoiceForAudit, setSelectedInvoiceForAudit] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
 
   // Invoices Export Handlers
@@ -165,11 +167,15 @@ export default function Invoices() {
 
   const handleDelete = async (id) => {
     try {
+      setDeleting(true);
+      setDeleteError('');
       await api.deleteInvoice(id);
       setInvoices(invoices.filter((inv) => inv._id !== id));
       setDeleteConfirmId(null);
     } catch (err) {
-      alert(err.message || 'Failed to delete invoice');
+      setDeleteError(err.message || 'Failed to delete invoice');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -582,31 +588,76 @@ export default function Invoices() {
       </div>
 
       {/* Delete Confirmation Modal */}
-      {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-5 space-y-4">
-            <h3 className="font-bold text-slate-900 text-sm">Delete Invoice?</h3>
-            <p className="text-xs text-slate-600">
-              Are you sure you want to delete this invoice? This will remove all associated tax
-              records and audit history.
-            </p>
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => setDeleteConfirmId(null)}
-                className="px-3 py-1.5 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDelete(deleteConfirmId)}
-                className="px-3 py-1.5 bg-rose-600 text-white rounded-lg text-xs font-bold shadow-sm"
-              >
-                Yes, Delete
-              </button>
+      {deleteConfirmId && (() => {
+        const invoiceToDelete = invoices.find((inv) => inv._id === deleteConfirmId);
+        return (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-4 border border-slate-100">
+              {/* Icon + Title */}
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center">
+                  <Trash2 className="w-5 h-5 text-rose-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-sm">Delete Invoice?</h3>
+                  {invoiceToDelete && (
+                    <p className="text-xs text-slate-500 mt-0.5 font-mono font-semibold">
+                      {invoiceToDelete.invoiceNumber}
+                      {invoiceToDelete.customerDetails?.companyName || invoiceToDelete.customerDetails?.name
+                        ? ` · ${invoiceToDelete.customerDetails?.companyName || invoiceToDelete.customerDetails?.name}`
+                        : ''}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Warning message */}
+              <div className="bg-rose-50 border border-rose-100 rounded-lg px-3 py-2.5">
+                <p className="text-xs text-rose-700 leading-relaxed">
+                  This will <strong>permanently delete</strong> the invoice along with all its associated
+                  tax records and audit history. This action <strong>cannot be undone</strong>.
+                </p>
+              </div>
+
+              {/* Inline error message (replaces browser alert) */}
+              {deleteError && (
+                <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
+                  <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-800 font-semibold leading-relaxed">{deleteError}</p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  onClick={() => { setDeleteConfirmId(null); setDeleteError(''); }}
+                  disabled={deleting}
+                  className="px-4 py-1.5 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-all disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDelete(deleteConfirmId)}
+                  disabled={deleting}
+                  className="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {deleting ? (
+                    <>
+                      <div className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                      Deleting…
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Yes, Delete
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Invoice Print & PDF Modal */}
       {selectedInvoiceForPrint && (
