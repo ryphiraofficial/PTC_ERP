@@ -7,7 +7,7 @@ export const ROLES = {
   OWNER: {
     key: 'owner',
     title: 'Owner / Administrator',
-    name: 'Aditya Sharma',
+    name: 'P SUKUMARAN NAIR',
     email: 'owner@ledgerly.app',
     badgeColor: 'bg-indigo-100 text-indigo-800 border-indigo-200',
     defaultPath: '/',
@@ -23,7 +23,7 @@ export const ROLES = {
   BILLER: {
     key: 'biller',
     title: 'Biller / Accounting Desk',
-    name: 'Pooja Verma',
+    name: 'P SUKUMARAN NAIR',
     email: 'biller@ledgerly.app',
     badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-200',
     defaultPath: '/invoices',
@@ -39,7 +39,7 @@ export const ROLES = {
   CA: {
     key: 'ca',
     title: 'Chartered Accountant (CA)',
-    name: 'Ramesh Mehta, FCA',
+    name: 'CA',
     email: 'ca@ledgerly.app',
     badgeColor: 'bg-amber-100 text-amber-800 border-amber-200',
     defaultPath: '/reports',
