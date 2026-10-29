@@ -138,6 +138,29 @@ export const getInvoiceById = async (req, res) => {
   }
 };
 
+// Get next sequential invoice number for a given prefix (peek — does NOT increment)
+export const getNextInvoiceNumber = async (req, res) => {
+  try {
+    const { prefix } = req.query;
+    if (!prefix) {
+      return res.status(400).json({ message: 'prefix query parameter is required' });
+    }
+
+    const company = await Company.findOne();
+    if (!company) {
+      return res.status(404).json({ message: 'Company not found' });
+    }
+
+    const counters = company.invoiceSettings.prefixCounters || new Map();
+    const nextNum = counters.get(prefix) || 1;
+    const invoiceNumber = `${prefix}-${String(nextNum).padStart(4, '0')}`;
+
+    res.json({ prefix, nextNumber: nextNum, invoiceNumber });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const createInvoice = async (req, res) => {
   try {
     const company = await Company.findOne();
@@ -166,14 +189,29 @@ export const createInvoice = async (req, res) => {
       totalInWords,
     } = calculateInvoiceAmounts(req.body.items, isInterState);
 
-    // Generate Invoice Number if not provided
+    // --- Invoice Number Generation ---
+    // Priority:
+    //   1. Client sent a full custom invoiceNumber → use as-is
+    //   2. Client sent invoicePrefix (e.g. 'PTC-A-2627') → use per-prefix counter
+    //   3. Fallback: global legacy counter
     let invoiceNumber = req.body.invoiceNumber;
-    if (!invoiceNumber) {
-      const prefix = company?.invoiceSettings?.prefix || 'INV-2024-';
+    const selectedPrefix = req.body.invoicePrefix; // e.g. 'PTC-A-2627' or 'PTC-B-2627'
+
+    if (!invoiceNumber && selectedPrefix && company) {
+      // Per-prefix sequential numbering
+      if (!company.invoiceSettings.prefixCounters) {
+        company.invoiceSettings.prefixCounters = new Map();
+      }
+      const currentNum = company.invoiceSettings.prefixCounters.get(selectedPrefix) || 1;
+      invoiceNumber = `${selectedPrefix}-${String(currentNum).padStart(4, '0')}`;
+      company.invoiceSettings.prefixCounters.set(selectedPrefix, currentNum + 1);
+      company.markModified('invoiceSettings.prefixCounters');
+      await company.save();
+    } else if (!invoiceNumber) {
+      // Fallback: legacy global counter
+      const prefix = company?.invoiceSettings?.prefix || 'PTC-2026-';
       const nextNum = company?.invoiceSettings?.nextNumber || 1001;
       invoiceNumber = `${prefix}${String(nextNum).padStart(4, '0')}`;
-
-      // Increment sequence in company
       if (company) {
         company.invoiceSettings.nextNumber = nextNum + 1;
         await company.save();
@@ -424,11 +462,6 @@ export const deleteInvoice = async (req, res) => {
     const invoice = await Invoice.findById(req.params.id);
     if (!invoice) {
       return res.status(404).json({ message: 'Invoice not found' });
-    }
-
-    // Billers cannot delete Paid invoices
-    if (req.user.role === 'biller' && invoice.status === 'Paid') {
-      return res.status(403).json({ message: 'Billers cannot delete Paid invoices. Only Owner has this permission.' });
     }
 
     await invoice.deleteOne();

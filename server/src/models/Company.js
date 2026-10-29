@@ -54,9 +54,12 @@ const companySchema = new mongoose.Schema(
     invoiceSettings: {
       prefix: { type: String, default: 'INV-2024-' },
       nextNumber: { type: Number, default: 1001 },
+      // Per-prefix sequential counters: { 'PTC-A-2627': 1, 'PTC-B-2627': 3, ... }
+      prefixCounters: { type: Map, of: Number, default: {} },
       termsAndConditions: {
         type: String,
-        default: '1. Payment due within 15 days of invoice date.\n2. Goods once sold will not be taken back or exchanged.\n3. Subject to local jurisdiction only.',
+        default:
+          '1. Payment due within 15 days of invoice date.\n2. Goods once sold will not be taken back or exchanged.\n3. Subject to local jurisdiction only.',
       },
       authorizedSignatory: { type: String, default: 'Authorized Signatory' },
     },

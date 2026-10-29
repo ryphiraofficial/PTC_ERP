@@ -62,6 +62,7 @@ export const api = {
   // Invoices
   getInvoices: (params = '') => apiFetch(`/invoices${params ? `?${params}` : ''}`),
   getInvoice: (id) => apiFetch(`/invoices/${id}`),
+  getNextInvoiceNumber: (prefix) => apiFetch(`/invoices/next-number?prefix=${encodeURIComponent(prefix)}`),
   createInvoice: (data) => apiFetch('/invoices', { method: 'POST', body: JSON.stringify(data) }),
   // FULL INVOICE EDIT
   updateInvoice: (id, data) => apiFetch(`/invoices/${id}`, { method: 'PUT', body: JSON.stringify(data) }),

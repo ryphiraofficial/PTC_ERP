@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -15,6 +15,7 @@ import {
   FileEdit,
   History,
   X,
+  Tag,
 } from 'lucide-react';
 import { api } from '../api';
 import { useAuth } from '../context/AuthContext';
@@ -53,7 +54,17 @@ export default function InvoiceForm() {
   const [customerModalError, setCustomerModalError] = useState('');
   const [savingCustomer, setSavingCustomer] = useState(false);
 
+  // Invoice prefix options
+  const INVOICE_PREFIXES = [
+    { value: 'PTC-A-2627', label: 'PTC-A-2627 (Category A)' },
+    { value: 'PTC-B-2627', label: 'PTC-B-2627 (Category B)' },
+    { value: 'custom', label: 'Custom Number' },
+  ];
+
   // Form State
+  const [invoicePrefix, setInvoicePrefix] = useState('PTC-A-2627'); // selected prefix
+  const [prefixMode, setPrefixMode] = useState('prefix'); // 'prefix' | 'custom'
+  const [loadingNextNum, setLoadingNextNum] = useState(false);
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split('T')[0]);
   const [dueDate, setDueDate] = useState(
@@ -100,9 +111,6 @@ export default function InvoiceForm() {
         setItemsCatalog(itemRes);
 
         if (!isEditMode && compRes?.invoiceSettings) {
-          const p = compRes.invoiceSettings.prefix || 'PTC-2026-';
-          const n = compRes.invoiceSettings.nextNumber || 1001;
-          setInvoiceNumber(`${p}${String(n).padStart(4, '0')}`);
           setTermsAndConditions(compRes.invoiceSettings.termsAndConditions || '');
           if (custRes.length > 0) {
             handleCustomerChange(custRes[0]._id, custRes, compRes);
@@ -150,6 +158,26 @@ export default function InvoiceForm() {
 
     loadData();
   }, [id, isEditMode]);
+
+  // Fetch next sequential number whenever prefix changes (create mode only)
+  useEffect(() => {
+    if (isEditMode || prefixMode !== 'prefix') return;
+    let cancelled = false;
+    async function fetchNext() {
+      setLoadingNextNum(true);
+      try {
+        const res = await api.getNextInvoiceNumber(invoicePrefix);
+        if (!cancelled) setInvoiceNumber(res.invoiceNumber);
+      } catch {
+        if (!cancelled) setInvoiceNumber(`${invoicePrefix}-0001`);
+      } finally {
+        if (!cancelled) setLoadingNextNum(false);
+      }
+    }
+    fetchNext();
+    return () => { cancelled = true; };
+  }, [invoicePrefix, prefixMode, isEditMode]);
+
 
   const companyStateCode = company?.address?.stateCode || '32';
   const isInterState = placeOfSupplyStateCode !== companyStateCode;
@@ -359,7 +387,11 @@ export default function InvoiceForm() {
       setError('');
 
       const payload = {
-        invoiceNumber,
+        // Prefix mode (create): let server generate the number & increment counter
+        // Custom mode or edit: send the full invoiceNumber directly
+        ...(prefixMode === 'prefix' && !isEditMode
+          ? { invoicePrefix }
+          : { invoiceNumber }),
         invoiceDate,
         dueDate,
         customerId,
@@ -421,7 +453,7 @@ export default function InvoiceForm() {
             </div>
             <p className="text-xs text-slate-500">
               {isEditMode
-                ? `Updating ${invoiceNumber} • Recalculates CGST/SGST/IGST dynamically`
+                ? `Updating ${invoiceNumber} â€¢ Recalculates CGST/SGST/IGST dynamically`
                 : 'Generate a compliant Indian GST Tax Invoice under Rule 46'}
             </p>
           </div>
@@ -517,7 +549,7 @@ export default function InvoiceForm() {
                   <option value="">-- Choose Customer --</option>
                   {customers.map((c) => (
                     <option key={c._id} value={c._id}>
-                      {c.companyName ? `${c.companyName} (${c.name})` : c.name} —{' '}
+                      {c.companyName ? `${c.companyName} (${c.name})` : c.name} â€”{' '}
                       {c.gstin || 'B2C Unregistered'}
                     </option>
                   ))}
@@ -558,7 +590,7 @@ export default function InvoiceForm() {
                 </span>
               </div>
               <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-white/80 border border-current">
-                Seller: {companyStateCode} ⇄ Buyer: {placeOfSupplyStateCode}
+                Seller: {companyStateCode} â‡„ Buyer: {placeOfSupplyStateCode}
               </span>
             </div>
 
@@ -692,7 +724,7 @@ export default function InvoiceForm() {
                       {/* Rate / Price */}
                       <div className="col-span-6 sm:col-span-2">
                         <label className="text-[11px] font-bold text-slate-600 block mb-1 uppercase">
-                          Rate (₹)
+                          Rate (â‚¹)
                         </label>
                         <input
                           type="number"
@@ -779,16 +811,75 @@ export default function InvoiceForm() {
               Invoice Metadata
             </h2>
 
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
-                Invoice Number:
+            {/* Invoice Number / Prefix Selector */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                <Tag className="w-3.5 h-3.5 text-indigo-500" />
+                Invoice Series &amp; Number
               </label>
-              <input
-                type="text"
-                value={invoiceNumber}
-                onChange={(e) => setInvoiceNumber(e.target.value)}
-                className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-mono font-bold text-slate-900"
-              />
+
+              {/* Prefix selector tabs — only in create mode */}
+              {!isEditMode && (
+                <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-lg">
+                  {INVOICE_PREFIXES.map((p) => (
+                    <button
+                      key={p.value}
+                      type="button"
+                      onClick={() => {
+                        if (p.value === 'custom') {
+                          setPrefixMode('custom');
+                          setInvoiceNumber('');
+                        } else {
+                          setPrefixMode('prefix');
+                          setInvoicePrefix(p.value);
+                        }
+                      }}
+                      className={`px-1.5 py-1.5 rounded-md text-[11px] font-bold transition-all text-center leading-tight ${
+                        (p.value === 'custom'
+                          ? prefixMode === 'custom'
+                          : prefixMode === 'prefix' && invoicePrefix === p.value)
+                          ? 'bg-white text-indigo-700 shadow-sm border border-indigo-200'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      {p.value === 'custom' ? 'Custom' : p.value}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Auto-preview for prefix mode */}
+              {prefixMode === 'prefix' && !isEditMode ? (
+                <div>
+                  <div
+                    className={`w-full px-3 py-2 bg-indigo-50 border border-indigo-200 rounded-lg text-sm font-mono font-bold text-indigo-900 flex items-center justify-between ${
+                      loadingNextNum ? 'opacity-60' : ''
+                    }`}
+                  >
+                    <span>{loadingNextNum ? 'Generating…' : invoiceNumber}</span>
+                    {loadingNextNum && (
+                      <div className="w-3.5 h-3.5 border-2 border-indigo-300 border-t-indigo-600 rounded-full animate-spin" />
+                    )}
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Auto-assigned — next unique number in <strong>{invoicePrefix}</strong> series
+                  </p>
+                </div>
+              ) : (
+                /* Custom / Edit mode: editable input */
+                <div>
+                  <input
+                    type="text"
+                    value={invoiceNumber}
+                    onChange={(e) => setInvoiceNumber(e.target.value)}
+                    placeholder="e.g. PTC-A-2627-0001"
+                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-mono font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500"
+                  />
+                  {!isEditMode && (
+                    <p className="text-[10px] text-slate-400 mt-1">Enter a custom invoice number</p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -835,7 +926,7 @@ export default function InvoiceForm() {
 
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">
-                Advance Amount Received (₹):
+                Advance Amount Received (â‚¹):
               </label>
               <input
                 id="advance-amount-input"
@@ -903,7 +994,7 @@ export default function InvoiceForm() {
                 <>
                   <div className="flex justify-between text-amber-300 text-xs bg-amber-900/30 px-2 py-1.5 rounded-lg">
                     <span>Advance Received:</span>
-                    <span className="font-semibold font-mono">− {formatINR(advanceAmountNum)}</span>
+                    <span className="font-semibold font-mono">âˆ’ {formatINR(advanceAmountNum)}</span>
                   </div>
                   <div className="flex justify-between items-baseline pt-1 border-t border-slate-700">
                     <span className="text-sm font-bold text-slate-300">Balance Due:</span>

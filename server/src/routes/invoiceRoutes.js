@@ -6,12 +6,15 @@ import {
   updateInvoice,
   auditInvoiceByCA,
   deleteInvoice,
+  getNextInvoiceNumber,
 } from '../controllers/invoiceController.js';
 import { protect, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
 
 router.get('/', protect, getInvoices);
+// Get next sequential number for a given prefix (must be before /:id)
+router.get('/next-number', protect, getNextInvoiceNumber);
 router.get('/:id', protect, getInvoiceById);
 router.post('/', protect, authorize('owner', 'biller'), createInvoice);
 // INVOICE EDIT FEATURE
